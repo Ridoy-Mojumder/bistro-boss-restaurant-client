@@ -4,6 +4,7 @@ import Cover from "../../../Shared/Cover/Cover";
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import { Helmet } from "react-helmet";
+import ReactPaginate from 'react-paginate';
 
 const Order = () => {
     const { category } = useParams();
@@ -13,6 +14,9 @@ const Order = () => {
     const [saladItems, setSaladItems] = useState([]);
     const [soupItems, setSoupItems] = useState([]);
     const [drinksItems, setDrinksItems] = useState([]);
+    const [currentPage, setCurrentPage] = useState(0);
+
+    const itemsPerPage = 6; // Number of items to display per page
 
     const categoryMap = {
         desserts: 0,
@@ -29,7 +33,7 @@ const Order = () => {
     }, [category]);
 
     useEffect(() => {
-        fetch("menu.json")
+        fetch("http://localhost:5000/menu")
             .then(res => res.json())
             .then(data => {
                 const dessert = data.filter(item => item.category === "dessert");
@@ -50,6 +54,29 @@ const Order = () => {
         // Add your add to cart logic here
     };
 
+    const handlePageChange = ({ selected }) => {
+        setCurrentPage(selected);
+    };
+
+    const renderItems = (items) => {
+        const startIndex = currentPage * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return items.slice(startIndex, endIndex).map(item => (
+            <div key={item._id} className="card border rounded-lg p-5 shadow-lg">
+                <img src={item.image} alt={item.name} className="w-full h-48 object-cover mb-4 rounded relative" />
+                <p className="text-lg font-semibold mb-4 absolute bg-black text-white top-8 right-10 p-2">${item.price.toFixed(2)}</p>
+                <h2 className="text-xl font-bold mb-2">{item.name}</h2>
+                <p className="text-gray-700 mb-2">{item.recipe}</p>
+                <button
+                    className="text-yellow-500 border-b-2 border-yellow-500 bg-slate-300 w-1/2 mx-auto px-4 py-2 rounded hover:bg-slate-500"
+                    onClick={() => handleAddToCart(item)}
+                >
+                    Add to Cart
+                </button>
+            </div>
+        ));
+    };
+
     return (
         <div>
             <Helmet>
@@ -66,97 +93,46 @@ const Order = () => {
                 </TabList>
                 <TabPanel>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 grid-cols-1 gap-7 m-10 mb-20">
-                        {dessertItems.map(item => (
-                            <div key={item._id} className="card border rounded-lg p-5 shadow-lg">
-                                <img src={item.image} alt={item.name} className="w-full h-48 object-cover mb-4 rounded relative" />
-                                <p className="text-lg font-semibold mb-4 absolute bg-black text-white top-8 right-10 p-2">${item.price.toFixed(2)}</p>
-                                <h2 className="text-xl font-bold mb-2">{item.name}</h2>
-                                <p className="text-gray-700 mb-2">{item.recipe}</p>
-                                <button
-                                    className="text-yellow-500 border-b-2 border-yellow-500 bg-slate-300 w-1/2 mx-auto px-4 py-2 rounded hover:bg-slate-500"
-                                    onClick={() => handleAddToCart(item)}
-                                >
-                                    Add to Cart
-                                </button>
-                            </div>
-                        ))}
+                        {renderItems(dessertItems)}
                     </div>
                 </TabPanel>
                 <TabPanel>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 grid-cols-1 gap-7 m-10 mb-20">
-                        {pizzaItems.map(item => (
-                            <div key={item._id} className="card border rounded-lg p-5 shadow-lg">
-                                <img src={item.image} alt={item.name} className="w-full h-48 object-cover mb-4 rounded relative" />
-                                <p className="text-lg font-semibold mb-4 absolute bg-black p-2 text-white top-8 right-10">${item.price.toFixed(2)}</p>
-                                <h2 className="text-xl font-bold mb-2">{item.name}</h2>
-                                <p className="text-gray-700 mb-2">{item.recipe}</p>
-                                <button
-                                    className="text-yellow-500 border-b-2 border-yellow-500 bg-slate-300 w-1/2 mx-auto px-4 py-2 rounded hover:bg-slate-500"
-                                    onClick={() => handleAddToCart(item)}
-                                >
-                                    Add to Cart
-                                </button>
-                            </div>
-                        ))}
+                        {renderItems(pizzaItems)}
                     </div>
                 </TabPanel>
                 <TabPanel>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 grid-cols-1 gap-7 m-10 mb-20">
-                        {saladItems.map(item => (
-                            <div key={item._id} className="card border rounded-lg p-5 shadow-lg">
-                                <img src={item.image} alt={item.name} className="w-full h-48 object-cover mb-4 rounded relative" />
-                                <p className="text-lg font-semibold mb-4 absolute bg-black p-2 text-white top-8 right-10">${item.price.toFixed(2)}</p>
-                                <h2 className="text-xl font-bold mb-2">{item.name}</h2>
-                                <p className="text-gray-700 mb-2">{item.recipe}</p>
-                                <button
-                                    className="text-yellow-500 border-b-2 border-yellow-500 bg-slate-300 w-1/2 mx-auto px-4 py-2 rounded hover:bg-slate-500"
-                                    onClick={() => handleAddToCart(item)}
-                                >
-                                    Add to Cart
-                                </button>
-                            </div>
-                        ))}
+                        {renderItems(saladItems)}
                     </div>
                 </TabPanel>
                 <TabPanel>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 grid-cols-1 gap-7 m-10 mb-20">
-                        {soupItems.map(item => (
-                            <div key={item._id} className="card border rounded-lg p-5 shadow-lg">
-                                <img src={item.image} alt={item.name} className="w-full h-48 object-cover mb-4 rounded relative" />
-                                <p className="text-lg font-semibold mb-4 absolute bg-black p-2 text-white top-8 right-10">${item.price.toFixed(2)}</p>
-                                <h2 className="text-xl font-bold mb-2">{item.name}</h2>
-                                <p className="text-gray-700 mb-2">{item.recipe}</p>
-                                <button
-                                    className="text-yellow-500 border-b-2 border-yellow-500 bg-slate-300 w-1/2 mx-auto px-4 py-2 rounded hover:bg-slate-500"
-                                    onClick={() => handleAddToCart(item)}
-                                >
-                                    Add to Cart
-                                </button>
-                            </div>
-                        ))}
+                        {renderItems(soupItems)}
                     </div>
                 </TabPanel>
                 <TabPanel>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 grid-cols-1 gap-7 m-10 mb-20">
-                        {drinksItems.map(item => (
-                            <div key={item._id} className="card border rounded-lg p-5 shadow-lg">
-                                <img src={item.image} alt={item.name} className="w-full h-48 object-cover mb-4 rounded relative" />
-                                <p className="text-lg font-semibold mb-4 absolute bg-black p-2 text-white top-8 right-10">${item.price.toFixed(2)}</p>
-                                <h2 className="text-xl font-bold mb-2">{item.name}</h2>
-                                <p className="text-gray-700 mb-2">{item.recipe}</p>
-                                <button
-                                    className="text-yellow-500 border-b-2 border-yellow-500 bg-slate-300 w-1/2 mx-auto px-4 py-2 rounded hover:bg-slate-500"
-                                    onClick={() => handleAddToCart(item)}
-                                >
-                                    Add to Cart
-                                </button>
-                            </div>
-                        ))}
+                        {renderItems(drinksItems)}
                     </div>
                 </TabPanel>
             </Tabs>
+            <ReactPaginate
+                previousLabel={"Previous"}
+                nextLabel={"Next"}
+                breakLabel={"..."}
+                pageCount={Math.ceil(dessertItems.length / itemsPerPage)}
+                onPageChange={handlePageChange}
+                containerClassName={"flex justify-center mt-4"}
+                pageClassName={"px-2 py-1 mx-1 rounded cursor-pointer bg-blue-500 text-white"}
+                activeClassName={"bg-yellow-500"}
+                previousClassName={"px-4 py-2 mx-1 rounded cursor-pointer bg-blue-500 text-white"}
+                nextClassName={"px-4 py-2 mx-1 rounded cursor-pointer bg-blue-500 text-white"}
+                disabledClassName={"px-2 py-1 mx-1 rounded cursor-not-allowed bg-gray-300 text-gray-500"}
+            />
         </div>
     );
 };
 
 export default Order;
+

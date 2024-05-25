@@ -1,10 +1,50 @@
-import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import './Navbar.css'
+import { AuthContext } from '../../Provider/AuthProvider';
+import { toast } from 'react-toastify';
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const toggleMenu = () => setIsOpen(prev => !prev);
+    const { user, logOut } = useContext(AuthContext);
+    const dropdownRef = useRef();
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const navigate = useNavigate();
+
+
+
+
+    const handleLogOut = () => {
+        logOut()
+            .then(() => {
+                toast.success('Logged out successfully.');
+                navigate('/login');
+            })
+            .catch((error) => {
+                toast.error(`Error: ${error.message}`);
+                console.error("Error logging out:", error);
+            });
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [dropdownRef]);
+
+    const toggleDropdown = () => {
+        setDropdownOpen(!dropdownOpen);
+    };
+
+
 
     const links = (
         <div className="flex flex-col md:flex-row md:space-x-4">
@@ -12,7 +52,27 @@ const Navbar = () => {
             <NavLink to="/contact" className="p-2 hover:text-gray-400">Contact Us</NavLink>
             <NavLink to="/menu" className="p-2 hover:text-gray-400">Our Menu</NavLink>
             <NavLink to="/order" className="p-2 hover:text-gray-400">Order Food</NavLink>
-            <NavLink to="/signout" className="p-2 hover:text-gray-400">Sign Out</NavLink>
+            <NavLink to="/secret" className="p-2 hover:text-gray-400">Order Secret</NavLink>
+            {!user ? <NavLink to="/login" className="p-2 hover:text-gray-400">Login</NavLink> :
+                <>
+                    <Link className="p-2 hover:text-gray-400" onClick={handleLogOut}><button>Sign Out</button></Link>
+                    <div className="avatar">
+                        <div className="w-12 h-12 rounded-full">
+                            <button onClick={toggleDropdown}>
+                                <img src={user.photoURL} alt="User" className="rounded-full" />
+                            </button>
+                            {dropdownOpen && (
+                                <div className="absolute right-0 -mt-5 py-2 w-48 bg-white rounded-lg shadow-xl">
+                                    <div className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        {user.displayName}
+                                    </div>
+                                    <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Profile</Link>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </>
+            }
         </div>
     );
 
